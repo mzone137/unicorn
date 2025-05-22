@@ -1,0 +1,151 @@
+{
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "name": "Git MCP Server Main Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "bearerAuth",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "mcp-server-trigger",
+      "name": "MCP Server Trigger",
+      "type": "n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [240, 400],
+      "credentials": {
+        "bearerAuth": {
+          "id": "BEARER_AUTH_ID_HIER_EINFUEGEN",
+          "name": "Bearer Auth for MCP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "name": "git_add",
+        "description": "Add files to git staging area. Parameters: pathsToAdd (string, default: '.')",
+        "workflowId": "WORKFLOW_ID_VON_GIT_ADD_HIER_EINFUEGEN",
+        "specifyInputSchema": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pathsToAdd": {
+              "type": "string",
+              "description": "Paths to add to git staging area",
+              "default": "."
+            }
+          }
+        }
+      },
+      "id": "custom-tool-git-add",
+      "name": "Git Add Tool",
+      "type": "n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "name": "git_commit",
+        "description": "Commit staged changes to git repository. Parameters: message (string, required)",
+        "workflowId": "WORKFLOW_ID_VON_GIT_COMMIT_HIER_EINFUEGEN",
+        "specifyInputSchema": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "description": "Commit message",
+              "default": "Automated commit via n8n MCP"
+            }
+          },
+          "required": ["message"]
+        }
+      },
+      "id": "custom-tool-git-commit",
+      "name": "Git Commit Tool",
+      "type": "n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1,
+      "position": [460, 400]
+    },
+    {
+      "parameters": {
+        "name": "git_pull",
+        "description": "Pull latest changes from remote git repository",
+        "workflowId": "WORKFLOW_ID_VON_GIT_PULL_HIER_EINFUEGEN",
+        "specifyInputSchema": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      "id": "custom-tool-git-pull",
+      "name": "Git Pull Tool",
+      "type": "n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "name": "git_log",
+        "description": "Show git commit history. Parameters: maxCount (number, default: 10)",
+        "workflowId": "WORKFLOW_ID_VON_GIT_LOG_HIER_EINFUEGEN",
+        "specifyInputSchema": true,
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "maxCount": {
+              "type": "number",
+              "description": "Maximum number of commits to show",
+              "default": 10
+            }
+          }
+        }
+      },
+      "id": "custom-tool-git-log",
+      "name": "Git Log Tool",
+      "type": "n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1,
+      "position": [460, 600]
+    }
+  ],
+  "connections": {
+    "MCP Server Trigger": {
+      "ai_tool": [
+        [
+          {
+            "node": "Git Add Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Git Commit Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Git Pull Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Git Log Tool",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
