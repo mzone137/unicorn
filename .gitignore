@@ -1,0 +1,69 @@
+# Enterprise .gitignore Deployment Strategy
+
+# Phase 1: Pre-emptive Defense (vor allem Development)
+cat > .gitignore << 'EOF'
+# === SECURITY CRITICAL ===
+*.env
+*.key
+*.pem
+*.p12
+*.crt
+*.secret
+config/secrets.yml
+.credentials/
+
+# === IDE FILES ===
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# === OS ARTIFACTS ===
+.DS_Store
+Thumbs.db
+*.tmp
+.tmp*
+
+# === BUILD ARTIFACTS ===
+node_modules/
+target/
+build/
+dist/
+*.log
+EOF
+
+git add .gitignore
+git commit -m "security: add comprehensive .gitignore (pre-emptive)"
+git push
+
+# Phase 2: Audit existing repository
+echo "=== SECURITY AUDIT ==="
+git ls-files | grep -E "\.(env|key|secret|pem)$" || echo "✓ No sensitive files found"
+git ls-files | grep -E "^\.idea/" && echo "⚠️  IDE files found - need cleanup"
+git ls-files | grep -E "\.(log|tmp)$" && echo "⚠️  Temp files found - need cleanup"
+
+# Phase 3: Cleanup (if needed)
+if git ls-files | grep -E "^\.idea/"; then
+    echo "Cleaning up .idea files..."
+    git rm -r --cached .idea/
+    git commit -m "cleanup: remove .idea files from tracking"
+fi
+
+# Phase 4: Verification
+git status --ignored
+echo "✓ .gitignore deployment complete"
+
+# Phase 5: Team enforcement (CI/CD integration)
+cat > .git/hooks/pre-commit << 'EOF'
+#!/bin/bash
+# Pre-commit security check
+if git diff --cached --name-only | grep -E "\.(env|key|secret|pem)$"; then
+    echo "🚨 SECURITY: Attempting to commit sensitive files!"
+    echo "Files:"
+    git diff --cached --name-only | grep -E "\.(env|key|secret|pem)$"
+    echo "Commit blocked. Add files to .gitignore and remove from staging."
+    exit 1
+fi
+EOF
+chmod +x .git/hooks/pre-commit
